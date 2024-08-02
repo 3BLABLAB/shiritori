@@ -15,9 +15,16 @@
     <!-- 次の文字を入力するフォーム -->
     <input id="nextWordInput" type="text" />
     <button id="nextWordSendButton">送信</button>
+    <button id="resetSendButton">リセット</button>
+    <button id="ShowhistoryButton">履歴を表示</button>
+    <!-- 使われた単語の履歴を表示する場所-->
+    <div id="Wordhistory">
+        
+    </div>
 
     <!-- JavaScriptを実行 -->
     <script>
+        let histories = [];
         window.onload = async (event) => {
             
             // GET /shiritoriを実行
@@ -28,16 +35,19 @@
             const paragraph = document.querySelector("#previousWord");
             // 取得したタグの中身を書き換える
             paragraph.innerHTML = `前の単語: ${previousWord}`;
+            histories.push(previousWord);
         }
 
         // 送信ボタンの押下時に実行
         document.querySelector("#nextWordSendButton").onclick = async(event) =>{
+            //履歴を非表示にする
+            document.getElementById("Wordhistory").style.visibility = "hidden";
             //inputタグを取得
             const nextWordInput = document.querySelector("#nextWordInput");
             //inputの中身を取得
             const nextWordInputText = nextWordInput.value;
             // POST /shiritoriを実行
-            //GET /shiritoriで実行
+            // 次の単語をresponseに格納
             const response = await fetch(
                 "/shiritori",
                 {
@@ -51,18 +61,75 @@
             if(response.status !== 200){
                 const errorJson = await response.text();
                 const errorObj = JSON.parse(errorJson);
-                alert(errorObj["errorMessage"]);
+                //前と次の単語がつながっていなかったらアラート
+                if(errorObj["errorCode"] === "10001"){
+                    alert(errorObj["errorMessage"]);
+                }
+                //「ん」で終わったら終了
+                else if(errorObj["errorCode"] === "10002"){
+                    alert(errorObj["errorMessage"]);
+                    location= "end.html";
+                }
+                //すでに使われた単語を使おうとしたら終了
+                else if(errorObj["errorCode"] === "10003"){
+                    alert(errorObj["errorMessage"]);
+                    location= "end.html";
+                }
+                
             }
-
             const previousWord = await response.text();
             
             // id: previousWordのタグを取得
             const paragraph = document.querySelector("#previousWord");
             // 取得したタグの中身を書き換える
             paragraph.innerHTML = `前の単語: ${previousWord}`;
+            //履歴に登録
+            histories.push(previousWord);
             //inputタグの中身を消去
             nextWordInput.value="";
+        }
 
+        //リセットボタンが押されたとき実行
+        document.querySelector("#resetSendButton").onclick = async(event) => {
+            const response = await fetch(
+                "/reset",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                    //body: JSON.stringify({ nextWord: nextWordInputText })
+                }
+            );
+            alert("reset try");
+            window.location.reload();
+        }
+
+        //履歴を表示ボタンが押されたとき実行
+        document.querySelector("#ShowhistoryButton").onclick = async(event) => {
+            //履歴の非表示を解除
+            document.getElementById("Wordhistory").style.visibility = "visible";
+            const response = await fetch(
+                "/show",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                    //body: JSON.stringify({ nextWord: nextWordInputText })
+                }
+            );
+            
+            // id: Wordhistoryのタグを取得
+            const paragraph = document.querySelector("#Wordhistory");
+            paragraph.replaceChildren();
+            // 取得したタグの中身を書き換える
+            let count=0;
+            histories.forEach(history=>{
+                //要素を取得
+                let new_element = document.createElement('p');
+                //要素を編集
+                count++;
+                new_element.textContent =`${count}. ${history}`;
+                //挿入
+                paragraph.appendChild(new_element);
+            })
         }
     </script>
 </body>

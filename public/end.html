@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<!-- headタグの中にはメタデータ等を記載する -->
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="end.css">
+</head>
+<body>
+    <h1>終了</h1>
+    <button id="resetSendButton">リセット</button>
+
+    <script>
+        document.querySelector("#resetSendButton").onclick = async(event) => {
+            const response = await fetch(
+                "/reset",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" }
+                    //body: JSON.stringify({ nextWord: nextWordInputText })
+                }
+            );
+            location = "index.html";
+            //window.location.reload();
+        }
+    </script>
+</body>
+</html>

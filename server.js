@@ -5,6 +5,7 @@
 import { serveDir } from "https://deno.land/std@0.223.0/http/file_server.ts";
 
 let previousWord = "aiout";
+let wordHistories = ["aiout"];
 
 // localhostにDenoのHTTPサーバーを展開
 Deno.serve(async(request) => {
@@ -27,7 +28,35 @@ Deno.serve(async(request) => {
 
         // previousWordの末尾とnextWordの先頭が同一か確認
         if(previousWord.slice(-1) === nextWord.slice(0,1)){
+
+            //末尾がんだったら
+            if(nextWord.slice(-1) ==='n'){
+                return new Response(
+                    JSON.stringify({
+                        "errorMessage": "「ん」で終わっています\nゲームを終了します",
+                        "errorCode": "10002"
+                    }),
+                    {
+                        status: 400,
+                        headers: {"Content-Type": "application/json; charset=udf-8"}
+                    }
+                )
+            }
+
+            if(wordHistories.includes(nextWord)){
+                return new Response(
+                    JSON.stringify({
+                        "errorMessage": "すでに使われています",
+                        "errorCode": "10003"
+                    }),
+                    {
+                        status: 400,
+                        headers: {"Content-Type": "application/json; charset=udf-8"}
+                    }
+                )
+            }
             // 同一であれば、previousWordを更新
+            wordHistories.push(nextWord);
             previousWord = nextWord;
         }
         else{
@@ -47,6 +76,24 @@ Deno.serve(async(request) => {
 
         return new Response(previousWord);
     }
+
+    //POST /reset:リセット
+    //request.methodとpathnameを確認
+    if(request.method ==="POST" && pathname === "/reset"){
+        // リクエストのペイロードを取得
+        const requestJson = await request.json();
+        // JSONの中からnextWordを取得
+        const nextWord = requestJson["nextWord"];
+        wordHistories=[];
+        previousWord = nextWord;
+    }
+
+    //POST /show:表示
+    // deno-lint-ignore no-empty
+    if(request.method ==="POST" && pathname === "/show"){
+        
+    }
+
 
     return serveDir(
         request,
