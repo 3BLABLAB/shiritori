@@ -18,7 +18,15 @@ Deno.serve(async(request) => {
     if (request.method === "GET" && pathname === "/shiritori") {
         return new Response(previousWord);
     }
+    
+    if (request.method === "GET" && pathname === "/reset") {
+        return new Response(previousWord);
+    }
 
+    if (request.method === "GET" && pathname === "/show") {
+        return new Response(previousWord);
+    }
+    
     // POST /shiritori: 次の単語を入力する
     if(request.method ==="POST" && pathname === "/shiritori" ){
         // リクエストのペイロードを取得
@@ -28,6 +36,10 @@ Deno.serve(async(request) => {
 
         console.log(previousWord);
         console.log(nextWord);
+        console.log("wordHistories are-----------------")
+        wordHistories.forEach(c=>{
+            console.log(c);
+        })
 
         // previousWordの末尾とnextWordの先頭が同一か確認
         if(previousWord.slice(-1) === nextWord.slice(0,1)){
@@ -50,6 +62,19 @@ Deno.serve(async(request) => {
                     JSON.stringify({
                         "errorMessage": "すでに使われています",
                         "errorCode": "10003"
+                    }),
+                    {
+                        status: 400,
+                        headers: {"Content-Type": "application/json; charset=udf-8"}
+                    }
+                )
+            }
+            //英数字を含んでいたら
+            if(!/^[A-Za-z0-9]*$/.test(nextWord)){
+                return new Response(
+                    JSON.stringify({
+                        "errorMessage": "ひらがなで入力してください",
+                        "errorCode": "10005"
                     }),
                     {
                         status: 400,
@@ -93,13 +118,16 @@ Deno.serve(async(request) => {
 
     //POST /reset:リセット
     //request.methodとpathnameを確認
-    if(request.method ==="POST" && pathname === "/reset"){
+    if(request.method ==="POST" && pathname === "/reset" ){
+        /*
         // リクエストのペイロードを取得
         const requestJson = await request.json();
         // JSONの中からnextWordを取得
         const nextWord = requestJson["nextWord"];
-        wordHistories=[];
         previousWord = nextWord;
+        */
+        wordHistories=[];
+        console.log("reset");
     }
 
     //POST /show:表示

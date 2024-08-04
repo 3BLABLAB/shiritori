@@ -16,7 +16,7 @@
     <p id="Count">0回</p>
     <progress id="pro" min="0" max="20" value="0"></progress><br>
     <!-- 次の文字を入力するフォーム -->
-    <input id="nextWordInput" type="text" pattern="[\u3041-\u3096]*" 
+    <input id="nextWordInput" type="text" pattern="^[ぁ-ん]+$ , [\u3041-\u309F]*" 
     title="ひらがなで入力してください" />
     <button id="nextWordSendButton">送信</button>
     <button id="resetSendButton">リセット</button>
@@ -41,7 +41,6 @@
             // 取得したタグの中身を書き換える
             paragraph.innerHTML = `前の単語: ${previousWord}`;
             histories.push(previousWord);
-            histories=[];
         }
 
         // 送信ボタンの押下時に実行
@@ -86,9 +85,6 @@
                     else if(errorObj["errorCode"] === "10004"){
                         alert(errorObj["errorMessage"]);
                     }
-                    else if(errorObj["errorCode"] === "10005"){
-                        alert(errorObj["errorMessage"]);
-                    }
                     
                 }
             //}catch(e){
@@ -113,7 +109,7 @@
             document.getElementById('pro').value=Count;
 
             //勝ち
-            if(document.getElementById('pro').value===20){
+            if(document.getElementById('pro').value===3){
                 alert("あなたの勝ちです！");
                 location = "win.html";
             }
@@ -122,13 +118,14 @@
         //リセットボタンが押されたとき実行
         document.querySelector("#resetSendButton").onclick = async(event) => {
             const response = await fetch(
-                "/reset",
+                "/resetttt",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" }
                     //body: JSON.stringify({ nextWord: nextWordInputText })
                 }
             );
+            alert("reset try");
             window.location.reload();
         }
 
