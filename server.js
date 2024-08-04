@@ -20,15 +20,17 @@ Deno.serve(async(request) => {
     }
 
     // POST /shiritori: 次の単語を入力する
-    if(request.method ==="POST" && pathname === "/shiritori"){
+    if(request.method ==="POST" && pathname === "/shiritori" ){
         // リクエストのペイロードを取得
         const requestJson = await request.json();
         // JSONの中からnextWordを取得
         const nextWord = requestJson["nextWord"];
 
+        console.log(previousWord);
+        console.log(nextWord);
+
         // previousWordの末尾とnextWordの先頭が同一か確認
         if(previousWord.slice(-1) === nextWord.slice(0,1)){
-
             //末尾がんだったら
             if(nextWord.slice(-1) ==='n'){
                 return new Response(
@@ -42,7 +44,7 @@ Deno.serve(async(request) => {
                     }
                 )
             }
-
+            //すでに使われていたら
             if(wordHistories.includes(nextWord)){
                 return new Response(
                     JSON.stringify({
@@ -55,13 +57,25 @@ Deno.serve(async(request) => {
                     }
                 )
             }
+            //一文字だったら
+            if(nextWord.length === 1){
+                return new Response(
+                    JSON.stringify({
+                        "errorMessage": "一文字の単語は無効です",
+                        "errorCode": "10004"
+                    }),
+                    {
+                        status: 400,
+                        headers: {"Content-Type": "application/json; charset=udf-8"}
+                    }
+                )
+            }
+            //console.log(String.fromCharCode(nextWord)); 
             // 同一であれば、previousWordを更新
             wordHistories.push(nextWord);
             previousWord = nextWord;
         }
         else{
-            console.log(previousWord);
-            console.log(nextWord);
             return new Response(
                 JSON.stringify({
                     "errorMessage": "前の単語に続いていません",

@@ -12,6 +12,9 @@
     <h1>しりとり</h1>
     <!-- 現在の単語を表示する場所 -->
     <p id="previousWord"></p>
+    <!-- 何回続いているか表示する場所-->
+    <p id="Count"></p>
+    <progress id="pro" min="0" max="20" value="0"></progress><br>
     <!-- 次の文字を入力するフォーム -->
     <input id="nextWordInput" type="text" />
     <button id="nextWordSendButton">送信</button>
@@ -25,6 +28,7 @@
     <!-- JavaScriptを実行 -->
     <script>
         let histories = [];
+        let Count=0;
         window.onload = async (event) => {
             
             // GET /shiritoriを実行
@@ -48,35 +52,44 @@
             const nextWordInputText = nextWordInput.value;
             // POST /shiritoriを実行
             // 次の単語をresponseに格納
-            const response = await fetch(
+            //try{
+                const response = await fetch(
                 "/shiritori",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ nextWord: nextWordInputText })
                 }
-            );
-            
-            // status: 200以外が返ってきた場合にエラーを表示
-            if(response.status !== 200){
-                const errorJson = await response.text();
-                const errorObj = JSON.parse(errorJson);
-                //前と次の単語がつながっていなかったらアラート
-                if(errorObj["errorCode"] === "10001"){
-                    alert(errorObj["errorMessage"]);
-                }
-                //「ん」で終わったら終了
-                else if(errorObj["errorCode"] === "10002"){
-                    alert(errorObj["errorMessage"]);
-                    location= "end.html";
-                }
-                //すでに使われた単語を使おうとしたら終了
-                else if(errorObj["errorCode"] === "10003"){
-                    alert(errorObj["errorMessage"]);
-                    location= "end.html";
-                }
+                );
                 
-            }
+                // status: 200以外が返ってきた場合にエラーを表示
+                if(response.status !== 200){
+                    const errorJson = await response.text();
+                    const errorObj = JSON.parse(errorJson);
+                    //前と次の単語がつながっていなかったらアラート
+                    if(errorObj["errorCode"] === "10001"){
+                        alert(errorObj["errorMessage"]);
+                    }
+                    //「ん」で終わったら終了
+                    else if(errorObj["errorCode"] === "10002"){
+                        alert(errorObj["errorMessage"]);
+                        location= "end.html";
+                    }
+                    //すでに使われた単語を使おうとしたら終了
+                    else if(errorObj["errorCode"] === "10003"){
+                        alert(errorObj["errorMessage"]);
+                        location= "end.html";
+                    }
+                    //一文字の単語だったら
+                    else if(errorObj["errorCode"] === "10004"){
+                        alert(errorObj["errorMessage"]);
+                    }
+                    
+                }
+            //}catch(e){
+                //console.error(`エラー:${e}`);
+            //}
+            
             const previousWord = await response.text();
             
             // id: previousWordのタグを取得
@@ -87,6 +100,18 @@
             histories.push(previousWord);
             //inputタグの中身を消去
             nextWordInput.value="";
+            Count++;
+            // id: Countのタグを編集
+            const paragraph1 = document.querySelector("#Count");
+            paragraph1.innerHTML=`${Count}回`;
+            //id: proのタグを編集
+            document.getElementById('pro').value=Count;
+
+            //勝ち
+            if(document.getElementById('pro').value===3){
+                alert("あなたの勝ちです！");
+                location = "win.html";
+            }
         }
 
         //リセットボタンが押されたとき実行
@@ -131,6 +156,7 @@
                 paragraph.appendChild(new_element);
             })
         }
+        
     </script>
 </body>
 
