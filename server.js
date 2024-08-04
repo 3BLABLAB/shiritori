@@ -4,8 +4,8 @@
 // denoではURLを直に記載してimportできます
 import { serveDir } from "https://deno.land/std@0.223.0/http/file_server.ts";
 
-let previousWord = "aiout";
-let wordHistories = ["aiout"];
+let previousWord = "あかさたな";
+let wordHistories = ["あかさたな"];
 
 // localhostにDenoのHTTPサーバーを展開
 Deno.serve(async(request) => {
